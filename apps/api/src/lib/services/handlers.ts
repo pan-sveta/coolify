@@ -76,6 +76,9 @@ export async function startService(request: FastifyRequest<ServiceStartStop>) {
         if (type === 'trilium') {
             return await startTriliumService(request)
         }
+        if (type === 'directus') {
+            return await startDirectusService(request)
+        }
 
         throw `Service type ${type} not supported.`
     } catch (error) {
@@ -2783,6 +2786,111 @@ async function startTriliumService(request: FastifyRequest<ServiceStartStop>) {
                     labels: makeLabelForServices('trilium'),
                     ...defaultComposeConfiguration(network),
                 }
+            },
+            networks: {
+                [network]: {
+                    external: true
+                }
+            },
+            volumes: volumeMounts
+        };
+        const composeFileDestination = `${workdir}/docker-compose.yaml`;
+        await fs.writeFile(composeFileDestination, yaml.dump(composeFile));
+        await startServiceContainers(destinationDocker.id, composeFileDestination)
+        return {}
+    } catch ({ status, message }) {
+        return errorHandler({ status, message })
+    }
+}
+
+async function startDirectusService(request: FastifyRequest<ServiceStartStop>){
+    try {
+        const { id } = request.params;
+        const teamId = request.user.teamId;
+        const service = await getServiceFromDB({ id, teamId });
+        const {
+            type,
+            version,
+            fqdn,
+            destinationDockerId,
+            destinationDocker,
+            serviceSecret,
+            persistentStorage,
+            exposePort,
+            directus: {
+                adminEmail,
+                adminPassword,
+                key ,
+                secret,
+                postgresqlHost,
+                postgresqlPort,
+                postgresqlUser ,
+                postgresqlPassword,
+                postgresqlDatabase,
+            }
+        } = service;
+
+        const network = destinationDockerId && destinationDocker.network;
+        const port = getServiceMainPort('directus');
+
+        const { workdir } = await createDirectories({ repository: type, buildId: id });
+        const image = getServiceImage(type);
+
+        const config = {
+            directus: {
+                image: `${image}:${version}`,
+                volumes: [`${id}-directus:/directus/uploads`],
+                environmentVariables: {
+                    KEY: key,
+                    SECRET: secret,
+                    ADMIN_EMAIL: adminEmail,
+                    ADMIN_PASSWORD: adminPassword,
+
+                    DB_CLIENT: 'pg',
+                    DB_HOST: `${id}-postgresql`,
+                    DB_PORT: '5432',
+                    DB_DATABASE: postgresqlDatabase,
+                    DB_USER: postgresqlUser,
+                    DB_PASSWORD: postgresqlPassword,
+
+                    PUBLIC_URL: fqdn,
+                }
+            },
+            postgresql: {
+                image: `postgres:12.3`,
+                volumes: [`${id}-postgresql-data:/var/lib/postgresql/data`],
+                environmentVariables: {
+                    POSTGRES_PASSWORD: postgresqlPassword,
+                    POSTGRES_USER: postgresqlUser,
+                    POSTGRES_DB: postgresqlDatabase
+                }
+            }
+        };
+        if (serviceSecret.length > 0) {
+            serviceSecret.forEach((secret) => {
+                config.directus.environmentVariables[secret.name] = secret.value;
+            });
+        }
+        const { volumeMounts } = persistentVolumes(id, persistentStorage, config)
+        const composeFile: ComposeFile = {
+            version: '3.8',
+            services: {
+                [id]: {
+                    container_name: id,
+                    image: config.directus.image,
+                    volumes: config.directus.volumes,
+                    environment: config.directus.environmentVariables,
+                    ...(exposePort ? { ports: [`${exposePort}:${port}`] } : {}),
+                    labels: makeLabelForServices('directus'),
+                    ...defaultComposeConfiguration(network),
+                },
+                [`${id}-postgresql`]: {
+                    container_name: `${id}-postgresql`,
+                    image: config.postgresql.image,
+                    environment: config.postgresql.environmentVariables,
+                    volumes: config.postgresql.volumes,
+                    ...defaultComposeConfiguration(network),
+                },
             },
             networks: {
                 [network]: {

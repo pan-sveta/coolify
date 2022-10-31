@@ -865,3 +865,76 @@ export const taiga = [{
 	isBoolean: false,
 	isEncrypted: false
 }]
+
+export const directus = [{
+	    name: 'adminEmail',
+	    isEditable: true,
+	    isLowerCase: true,
+	    isNumber: false,
+	    isBoolean: false,
+	    isEncrypted: false
+	},
+	{
+		name: 'adminPassword',
+		isEditable: true,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: true
+	},
+	{
+		name: 'key',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: true
+	},
+	{
+		name: 'secret',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: true
+	},
+	{
+		name: 'postgresqlHost',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: false
+	},
+	{
+		name: 'postgresqlPort',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: false
+	},
+	{
+		name: 'postgresqlUser',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: false
+	},
+	{
+		name: 'postgresqlPassword',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: true
+	},
+	{
+		name: 'postgresqlDatabase',
+		isEditable: false,
+		isLowerCase: false,
+		isNumber: false,
+		isBoolean: false,
+		isEncrypted: false
+	}]

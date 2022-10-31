@@ -39,6 +39,7 @@
 	import Weblate from './_Weblate.svelte';
 	import Explainer from '$lib/components/Explainer.svelte';
 	import Taiga from './_Taiga.svelte';
+	import Directus from './_Directus.svelte';
 	import DocLink from '$lib/components/DocLink.svelte';
 
 	const { id } = $page.params;
@@ -77,6 +78,7 @@
 		if (loading.save) return;
 		loading.save = true;
 		try {
+			console.log(service);
 			await post(`/services/${id}/check`, {
 				fqdn: service.fqdn,
 				forceSave,
@@ -445,6 +447,8 @@
 			<Weblate bind:service />
 		{:else if service.type === 'taiga'}
 			<Taiga bind:service />
+		{:else if service.type === 'directus'}
+			<Directus bind:service />
 		{/if}
 	</form>
 </div>

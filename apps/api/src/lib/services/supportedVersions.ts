@@ -275,4 +275,16 @@ export const supportedServiceTypesAndVersions = [
 		},
 		labels: ['trilium', 'notes', 'note-taking', 'wiki']
 	},
+	{
+		name: 'directus',
+		fancyName: 'Directus',
+		baseImage: 'directus/directus',
+		images: [],
+		versions: ['latest'],
+		recommendedVersion: 'latest',
+		ports: {
+			main: 8055
+		},
+		labels: ['directus', 'headless-cms', 'cms']
+	},
 ];

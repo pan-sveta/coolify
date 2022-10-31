@@ -46,4 +46,6 @@
 	<Icons.Grafana {isAbsolute} />
 {:else if type === 'trilium'}
 	<Icons.Trilium {isAbsolute} />
+{:else if type === 'directus'}
+	<Icons.Directus {isAbsolute} />
 {/if}

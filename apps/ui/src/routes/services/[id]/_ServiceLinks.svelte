@@ -83,4 +83,8 @@
 	<a href="https://github.com/zadam/trilium" target="_blank">
 		<Icons.Trilium />
 	</a>
+{:else if service.type === 'directus'}
+	<a href="https://github.com/directus/directus" target="_blank">
+		<Icons.Directus />
+	</a>
 {/if}

@@ -21,6 +21,7 @@ export const includeServices: any = {
 	searxng: true,
 	weblate: true,
 	taiga: true,
+	directus: true
 };
 export async function configureServiceType({
 	id,
@@ -350,7 +351,36 @@ export async function configureServiceType({
 				}
 			}
 		});
-	} else {
+	} else if (type === 'directus') {
+		const adminEmail = `${cuid()}@example.com`;
+		const adminPassword = encrypt(generatePassword({}));
+		const key = encrypt(generatePassword({}));
+		const secret = encrypt(generatePassword({}));
+		const postgresqlUser = cuid();
+		const postgresqlPassword = encrypt(generatePassword({}));
+		const postgresqlDatabase = 'directus';
+
+		await prisma.service.update({
+			where: { id },
+			data: {
+				type,
+				directus: {
+					create: {
+						adminEmail,
+						adminPassword,
+						key,
+						secret,
+						postgresqlHost: `${id}-postgresql`,
+						postgresqlPort: 5432,
+						postgresqlUser,
+						postgresqlPassword,
+						postgresqlDatabase,
+					}
+				}
+			}
+		});
+	}
+	else {
 		await prisma.service.update({
 			where: { id },
 			data: {
@@ -378,6 +408,7 @@ export async function removeService({ id }: { id: string }): Promise<void> {
 	await prisma.searxng.deleteMany({ where: { serviceId: id } });
 	await prisma.weblate.deleteMany({ where: { serviceId: id } });
 	await prisma.taiga.deleteMany({ where: { serviceId: id } });
+	await prisma.directus.deleteMany({ where: { serviceId: id } });
 
 	await prisma.service.delete({ where: { id } });
 }
